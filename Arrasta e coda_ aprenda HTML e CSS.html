@@ -1,0 +1,1051 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Arrasta e coda: aprenda HTML e CSS montando sites</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=MuseoModerno:wght@400;500;600;700&family=Saira:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#ffffff; --fg:#000000; --suave:#4a4356; --superficie:#f3edfe;
+  --linha:rgba(20,0,48,.16); --acento:#6a18e0; --acento-forte:#5310b8; --sobre-acento:#ffffff;
+  --maquina-bg:#0b0114; --maquina-linha:rgba(255,255,255,.12); --ok:#00d18f; --erro:#e0284a;
+  --humana:"MuseoModerno", ui-rounded, "Segoe UI", system-ui, sans-serif;
+  --maquina:"Saira", ui-sans-serif, system-ui, sans-serif;
+  --codigo:"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#000000; --fg:#ffffff; --suave:#a897c4; --superficie:#150827;
+    --linha:rgba(255,255,255,.18); --acento:#8b3bff; --acento-forte:#a06bff;
+    --maquina-bg:#0d0518; --maquina-linha:rgba(255,255,255,.14);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#000000; --fg:#ffffff; --suave:#a897c4; --superficie:#150827;
+  --linha:rgba(255,255,255,.18); --acento:#8b3bff; --acento-forte:#a06bff;
+  --maquina-bg:#0d0518; --maquina-linha:rgba(255,255,255,.14);
+}
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--humana);line-height:1.5;-webkit-font-smoothing:antialiased;overflow:hidden}
+button{font:inherit;color:inherit}
+code{font-family:var(--codigo);font-size:.86em;background:var(--superficie);padding:.05em .35em;border-radius:.3em}
+:focus-visible{outline:2px solid var(--acento-forte);outline-offset:2px;border-radius:4px}
+
+.app{height:100%;display:grid;grid-template-rows:auto 1fr}
+
+/* topo */
+.topo{display:flex;align-items:center;gap:.8rem;padding:.75rem 1.25rem;border-bottom:1px solid var(--linha)}
+.marca{background:var(--acento);color:var(--sobre-acento);font-family:var(--codigo);font-weight:500;font-size:.85rem;padding:.3rem .55rem;border-radius:.35rem}
+.nome b{display:block;font-weight:600;font-size:1.05rem;line-height:1.1}
+.nome span{font-family:var(--maquina);font-size:.76rem;color:var(--suave)}
+.fases{display:flex;gap:.35rem;margin-left:auto;flex-wrap:wrap}
+.fase-btn{display:inline-flex;align-items:center;gap:.4rem;border:1px solid var(--linha);background:none;border-radius:999px;padding:.28rem .75rem;font-family:var(--maquina);font-size:.8rem;cursor:pointer}
+.fase-btn .num{color:var(--acento);font-weight:600}
+.fase-btn:hover{border-color:var(--acento)}
+.fase-btn[aria-current="true"]{background:var(--acento);border-color:var(--acento);color:var(--sobre-acento)}
+.fase-btn[aria-current="true"] .num{color:inherit}
+.fase-btn.feita::after{content:"✓";color:var(--ok);font-weight:600}
+.fase-btn[aria-current="true"].feita::after{color:#b6ffe6}
+.recomecar{border:0;background:none;cursor:pointer;font-family:var(--maquina);font-size:.8rem;color:var(--suave);text-decoration:underline;text-underline-offset:3px;padding:.3rem .2rem}
+
+/* palco */
+.palco{display:grid;grid-template-columns:minmax(0,42fr) minmax(0,58fr);min-height:0}
+
+/* código (esquerda) */
+.codigo{background:var(--maquina-bg);color:#fff;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) minmax(0,1.2fr);min-height:0;min-width:0;overflow:hidden}
+.painel{display:flex;flex-direction:column;min-height:0;min-width:0}
+.painel + .painel{border-top:1px solid var(--maquina-linha)}
+.painel-cab{display:flex;align-items:center;gap:.6rem;padding:.55rem 1rem;font-family:var(--maquina);font-size:.78rem;color:#cbb8e8;border-bottom:1px solid var(--maquina-linha)}
+.painel-cab .arq{color:#fff;font-weight:500;font-family:var(--codigo);font-size:.78rem}
+.delta{margin-left:auto;color:var(--ok);font-family:var(--codigo);font-size:.75rem;opacity:0;transition:opacity .3s}
+.delta.mostra{opacity:1}
+.rolagem{flex:1;overflow:auto;position:relative;padding:.6rem 0 2rem}
+.linha{display:flex;font-family:var(--codigo);font-size:.8rem;line-height:1.7;white-space:pre}
+.linha .n{flex:0 0 3.2rem;text-align:right;padding-right:1rem;color:rgba(255,255,255,.26);user-select:none}
+.linha .c{padding-right:1.2rem}
+.linha.nova{animation:nasce 2.8s ease-out}
+.linha.nova .n{color:var(--ok)}
+.linha.nova .n::before{content:"+ "}
+@keyframes nasce{0%{background:rgba(0,209,143,.34)}55%{background:rgba(0,209,143,.14)}100%{background:transparent}}
+.linha.vazia .c{color:#8a6cc0;font-style:italic}
+.k-tag{color:#c79bff}.k-atr{color:#e4d6ff}.k-str{color:#6ff0c0}.k-com{color:rgba(255,255,255,.4);font-style:italic}
+.k-sel{color:#c79bff}.k-prop{color:#e4d6ff}.k-val{color:#6ff0c0}
+
+.mao-box{margin:.8rem 1rem 0 1rem;border:1px solid #8b3bff;border-radius:.6rem;overflow:hidden}
+.mao-box[hidden]{display:none}
+.mao-cab{display:flex;align-items:center;gap:.5rem;font-family:var(--maquina);font-size:.76rem;color:#fff;background:#6a18e0;padding:.35rem .75rem}
+.mao-cab span{opacity:.8;margin-left:auto}
+#editor{display:block;width:100%;min-height:8rem;background:rgba(139,59,255,.1);border:0;color:#fff;font-family:var(--codigo);font-size:.84rem;line-height:1.7;padding:.6rem .9rem;resize:vertical;tab-size:2;caret-color:#6ff0c0}
+#editor:focus{outline:none;background:rgba(139,59,255,.18)}
+.mao-box.chama{animation:chama 1.4s ease-out}
+@keyframes chama{0%{box-shadow:0 0 0 0 rgba(139,59,255,.8)}100%{box-shadow:0 0 0 14px rgba(139,59,255,0)}}
+
+/* lado direito */
+.lado{min-width:0;display:grid;grid-template-rows:auto minmax(0,1fr);gap:.9rem;padding:1rem 1.25rem 1.25rem;min-height:0}
+.etapas{display:flex;gap:.35rem;margin-bottom:.5rem}
+.etapa{font-family:var(--maquina);font-size:.74rem;border:1px solid var(--linha);border-radius:999px;padding:.1rem .6rem;color:var(--suave)}
+.etapa.ativa{border-color:var(--acento);color:var(--acento);background:var(--superficie)}
+.etapa.ok{border-color:var(--ok);color:var(--ok)}
+.etapa.ok::before{content:"✓ "}
+.guia h1{font-weight:600;font-size:1.6rem;line-height:1.08;letter-spacing:-.015em;margin:0 0 .35rem}
+.guia p{margin:0;color:var(--suave);font-size:.95rem;max-width:66ch;min-height:3em}
+
+.area{display:grid;grid-template-columns:minmax(0,1fr) 15.5rem;gap:1rem;min-height:0}
+.moldura{display:flex;flex-direction:column;min-height:0;border:1px solid var(--linha);border-radius:1rem;overflow:hidden;background:var(--superficie);transition:border-color .3s,box-shadow .3s}
+.moldura.vitoria{border-color:var(--ok);box-shadow:0 0 0 3px rgba(0,209,143,.25)}
+.endereco{display:flex;align-items:center;gap:.35rem;margin:.55rem;background:var(--bg);border:1px solid var(--linha);border-radius:999px;padding:.3rem .9rem;font-family:var(--maquina);font-size:.8rem}
+.endereco .proto{color:var(--suave)}
+.corpo{flex:1;position:relative;background:#fff;min-height:0}
+#tela{position:absolute;inset:0;width:100%;height:100%;border:0;background:#fff;display:block}
+.guia-centro{position:absolute;top:0;bottom:0;width:0;border-left:2px dashed rgba(106,24,224,.55);pointer-events:none}
+.guia-centro::before{content:"meio";position:absolute;top:.4rem;left:.3rem;font-family:var(--maquina);font-size:.7rem;color:#6a18e0;background:#f3edfe;padding:0 .35rem;border-radius:.25rem}
+.guia-canto{position:absolute;bottom:12px;width:150px;height:52px;border:2px dashed rgba(106,24,224,.6);border-radius:999px;pointer-events:none;display:flex;align-items:center;justify-content:center;font-family:var(--maquina);font-size:.72rem;color:#6a18e0;background:rgba(243,237,254,.6)}
+[hidden]{display:none!important}
+
+/* peças */
+.pecas{display:flex;flex-direction:column;min-height:0;overflow:auto;padding-right:.15rem}
+.pecas-cab{display:flex;align-items:baseline;justify-content:space-between;margin:0 0 .6rem}
+.pecas-cab h2{margin:0;font-size:1.05rem;font-weight:600}
+.pecas-cab span{font-family:var(--maquina);font-size:.74rem;color:var(--suave)}
+.lista{display:flex;flex-direction:column;gap:.45rem}
+.peca{display:flex;align-items:center;gap:.6rem;width:100%;text-align:left;border:1px solid var(--linha);background:var(--superficie);border-radius:.6rem;padding:.55rem .7rem;cursor:grab;touch-action:none;user-select:none}
+.peca:hover{border-color:var(--acento)}
+.peca .tag{font-family:var(--codigo);font-size:.78rem;color:var(--acento);background:var(--bg);border:1px solid var(--linha);border-radius:.35rem;padding:.08rem .4rem;flex:0 0 auto}
+.peca .rot{font-size:.9rem;line-height:1.2}
+.peca.usada{opacity:.4;cursor:default;background:none}
+.peca.usada .rot::after{content:" ✓";color:var(--ok)}
+.peca.saiu{opacity:.25}
+.peca.trancada{margin-top:.5rem;border-style:dashed;border-color:var(--acento);background:none;cursor:not-allowed;flex-wrap:wrap}
+.peca.trancada .tag{border-style:dashed}
+.peca.trancada small{flex-basis:100%;font-family:var(--maquina);font-size:.72rem;color:var(--suave)}
+.treme{animation:treme .4s}
+@keyframes treme{20%,60%{transform:translateX(-5px)}40%,80%{transform:translateX(5px)}}
+.peca.trancada.chama{animation:pulso 1s ease-out 2}
+@keyframes pulso{0%{box-shadow:0 0 0 0 rgba(106,24,224,.55)}100%{box-shadow:0 0 0 12px rgba(106,24,224,0)}}
+
+.fantasma{position:fixed;left:0;top:0;z-index:100;pointer-events:none;box-shadow:0 14px 34px rgba(40,0,90,.28);background:var(--bg)!important;opacity:1!important;cursor:grabbing}
+body.arrastando,body.arrastando *{cursor:grabbing!important;user-select:none!important}
+.lista,.peca{user-select:none;-webkit-user-select:none}
+.chip{position:fixed;left:0;top:0;z-index:101;pointer-events:none;font-family:var(--codigo);font-size:.78rem;background:var(--ok);color:#00261a;padding:.15rem .5rem;border-radius:.35rem;font-weight:500;white-space:nowrap}
+
+/* painel na mão */
+.mao h2{margin:0 0 .4rem;font-size:1.15rem;font-weight:600}
+.mao .tarefa{margin:0 0 .8rem;font-size:.92rem}
+.checks{list-style:none;margin:0 0 .8rem;padding:0;display:grid;gap:.4rem}
+.checks li{display:flex;gap:.5rem;align-items:flex-start;font-size:.88rem;color:var(--suave);line-height:1.3}
+.checks li::before{content:"";flex:0 0 1rem;height:1rem;margin-top:.05rem;border:2px solid var(--linha);border-radius:50%;transition:all .2s}
+.checks li.ok{color:var(--fg)}
+.checks li.ok::before{background:var(--ok);border-color:var(--ok);box-shadow:inset 0 0 0 2px var(--bg)}
+.mao .onde{font-family:var(--maquina);font-size:.76rem;color:var(--suave);margin:0 0 .8rem}
+.dica{margin:0 0 .5rem;font-size:.84rem;background:var(--superficie);border-radius:.5rem;padding:.5rem .65rem}
+.sec{cursor:pointer;background:none;border:1px solid var(--acento);color:var(--acento);border-radius:.5rem;padding:.4rem .75rem;font-family:var(--maquina);font-size:.8rem}
+.acao{cursor:pointer;background:var(--acento);color:var(--sobre-acento);border:0;border-radius:.6rem;padding:.6rem 1rem;font-weight:500;font-size:.92rem;margin-top:.4rem}
+.acao:active,.sec:active{transform:translateY(1px)}
+.feito{margin:.2rem 0 1rem;border:1px solid var(--ok);border-radius:.7rem;padding:.75rem .8rem}
+.feito h3{margin:0 0 .3rem;font-size:1rem;font-weight:600;color:var(--ok)}
+.feito p{margin:0;font-size:.86rem;color:var(--suave)}
+.placar{font-family:var(--maquina);font-size:.76rem;color:var(--suave);margin-top:.5rem!important}
+
+.aviso{position:fixed;left:50%;bottom:calc(1.2rem + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);opacity:0;background:var(--maquina-bg);color:#fff;font-family:var(--maquina);font-size:.85rem;padding:.55rem 1rem;border-radius:999px;border:1px solid rgba(255,255,255,.15);transition:all .25s;pointer-events:none;z-index:200;max-width:90vw}
+.aviso.mostra{opacity:1;transform:translate(-50%,0)}
+.aviso.bom{background:#00a872;border-color:transparent}
+
+.so-desktop{display:none}
+@media (max-width:900px){
+  body{overflow:auto}
+  .app{height:auto}
+  .palco{grid-template-columns:1fr}
+  .codigo{height:70vh;order:2}
+  .area{grid-template-columns:1fr;grid-template-rows:60vh auto}
+  .so-desktop{display:block;background:var(--superficie);font-family:var(--maquina);font-size:.8rem;padding:.5rem 1.25rem}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topo">
+    <span class="marca" aria-hidden="true">&lt;/&gt;</span>
+    <div class="nome"><b>Arrasta e coda</b><span>Aprenda HTML e CSS montando sites de verdade</span></div>
+    <nav class="fases" id="fases" aria-label="Fases"></nav>
+    <button class="recomecar" id="recomecar" type="button">Recomeçar fase</button>
+  </header>
+  <p class="so-desktop">Este jogo foi feito para telas grandes. No computador fica bem melhor.</p>
+
+  <main class="palco">
+    <section class="codigo" aria-label="Código gerado">
+      <div class="painel">
+        <div class="painel-cab"><span class="arq">index.html</span> o esqueleto da página <span class="delta" id="deltaHtml"></span></div>
+        <div class="rolagem" id="rolaHtml"><div id="htmlLinhas"></div></div>
+      </div>
+      <div class="painel">
+        <div class="painel-cab"><span class="arq">estilo.css</span> a aparência <span class="delta" id="deltaCss"></span></div>
+        <div class="rolagem" id="rolaCss">
+          <div id="cssLinhas"></div>
+          <div class="mao-box" id="maoBox" hidden>
+            <div class="mao-cab">✋ Seu código <span>escreva aqui</span></div>
+            <textarea id="editor" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Editor de CSS"></textarea>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="lado">
+      <div class="guia">
+        <div class="etapas"><span class="etapa" id="etapa1">1 Arrastar</span><span class="etapa" id="etapa2">2 Na mão</span></div>
+        <h1 id="titulo"></h1>
+        <p id="mensagem"></p>
+      </div>
+      <div class="area">
+        <div class="moldura" id="moldura">
+          <div class="endereco"><span class="proto">https://</span><span id="url"></span></div>
+          <div class="corpo" id="corpo">
+            <iframe id="tela" title="Resultado da página"></iframe>
+            <div class="guia-centro" id="guiaCentro" hidden></div>
+            <div class="guia-canto" id="guiaCanto" hidden>o botão vai aqui</div>
+          </div>
+        </div>
+        <aside class="pecas" aria-label="Peças">
+          <div id="blocoPecas">
+            <div class="pecas-cab"><h2>Peças</h2><span id="contaPecas"></span></div>
+            <div class="lista" id="listaPecas"></div>
+          </div>
+          <div class="mao" id="painelMao" hidden></div>
+        </aside>
+      </div>
+    </section>
+  </main>
+</div>
+<div class="aviso" id="aviso" role="status" aria-live="polite"></div>
+
+<script>
+const AVATAR='data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><rect width="120" height="120" fill="#d9c6ff"/><circle cx="60" cy="48" r="22" fill="#6a18e0"/><path d="M18 124c4-28 21-42 42-42s38 14 42 42z" fill="#6a18e0"/></svg>');
+
+const FASES=[
+{
+  id:'google', aba:'Google', titulo:'Monte a página do Google', url:'google.com',
+  guia:'centro',
+  html:[
+    '<body>',
+    '  <header class="topo">',
+    {slot:'apps',ind:'    '},
+    '  </header>',
+    '',
+    '  <main class="busca">',
+    {slot:'logo',ind:'    '},
+    {slot:'campo',ind:'    '},
+    '    <div class="botoes">',
+    {slot:'b1',ind:'      '},
+    {slot:'b2',ind:'      '},
+    '    </div>',
+    '  </main>',
+    '</body>'
+  ],
+  slots:{
+    apps:{label:'Links do topo',style:'width:170px;margin-left:auto'},
+    logo:{label:'Logo',style:'width:250px;min-height:84px'},
+    campo:{label:'Campo de busca',style:'width:380px;max-width:90%'},
+    b1:{label:'Botão',grupo:'botao',inline:true,style:'width:140px'},
+    b2:{label:'Botão',grupo:'botao',inline:true,style:'width:140px'}
+  },
+  cssBase:`body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+main {
+  padding-top: 40px;
+}`,
+  css:{
+    topo:`.topo {
+  display: flex;
+  justify-content: flex-end;
+  padding: 14px 20px;
+}
+.apps a {
+  margin-left: 16px;
+  color: #202124;
+  font-size: 13px;
+  text-decoration: none;
+}`,
+    logo:`.logo {
+  margin: 0 0 24px;
+  font-size: 84px;
+  font-weight: 500;
+  letter-spacing: -3px;
+}
+.azul { color: #4285f4; }
+.vermelho { color: #ea4335; }
+.amarelo { color: #fbbc05; }
+.verde { color: #34a853; }`,
+    campo:`.campo {
+  box-sizing: border-box;
+  width: 440px;
+  max-width: 90%;
+  padding: 13px 20px;
+  border: 1px solid #dfe1e5;
+  border-radius: 24px;
+  font-size: 16px;
+}`,
+    botoes:`.botoes {
+  margin-top: 28px;
+}
+.botoes button {
+  margin: 0 4px;
+  padding: 10px 16px;
+  border: 1px solid #f8f9fa;
+  border-radius: 4px;
+  background: #f8f9fa;
+  color: #3c4043;
+  font-size: 14px;
+}`
+  },
+  pecas:[
+    {id:'logo',slot:'logo',tag:'<h1>',label:'Logo colorido',css:['logo'],
+     html:`<h1 class="logo">
+  <span class="azul">G</span><span class="vermelho">o</span><span class="amarelo">o</span><span class="azul">g</span><span class="verde">l</span><span class="vermelho">e</span>
+</h1>`},
+    {id:'campo',slot:'campo',tag:'<input>',label:'Campo de busca',css:['campo'],
+     html:`<input class="campo" type="text" placeholder="Pesquise no Google">`},
+    {id:'pesquisa',grupo:'botao',tag:'<button>',label:'Botão “Pesquisa Google”',css:['botoes'],
+     html:`<button>Pesquisa Google</button>`},
+    {id:'sorte',grupo:'botao',tag:'<button>',label:'Botão “Estou com sorte”',css:['botoes'],
+     html:`<button>Estou com sorte</button>`},
+    {id:'apps',slot:'apps',tag:'<nav>',label:'Links do topo',css:['topo'],
+     html:`<nav class="apps">
+  <a href="#">Gmail</a>
+  <a href="#">Imagens</a>
+</nav>`}
+  ],
+  trancada:'Centralizar a busca',
+  mao:{
+    hm:'Hm, arrastar foi fácil, e o código de verdade é esse aí do lado. Mas repara: a busca ficou grudada na esquerda, e não existe bloquinho de centralizar. Isso vai ter que ser na mão.',
+    tarefa:'Centralize o conteúdo da <code>.busca</code>: logo, campo e botões no meio da página.',
+    inicial:'.busca {\n  \n}\n',
+    checks:[
+      {txt:'Logo no meio', fn:h=>{const u=h.uniao(h.qa('.logo span'));return u&&h.perto(u.cx,h.W/2)}},
+      {txt:'Campo de busca no meio', fn:h=>{const u=h.uniao(h.qa('.campo'));return u&&h.perto(u.cx,h.W/2)}},
+      {txt:'Botões no meio', fn:h=>{const u=h.uniao(h.qa('.botoes button'));return u&&h.perto(u.cx,h.W/2)}}
+    ],
+    dicas:[
+      'Quem manda na posição dos filhos é o pai. Escreva as regras dentro de <code>.busca { }</code>.',
+      'Um jeito: <code>display: flex;</code> e <code>flex-direction: column;</code> colocam os filhos numa coluna. Falta uma propriedade que alinha essa coluna no meio: <code>align-items</code>.',
+      'Outro jeito, mais antigo: <code>text-align: center;</code> centraliza tudo o que é “de linha” dentro da caixa.'
+    ],
+    solucao:'.busca {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n}\n'
+  },
+  aprendeu:'Centralizar é conversa com o pai: você disse à <code>.busca</code> como organizar os filhos. <code>display: flex</code> com <code>align-items: center</code> e <code>text-align: center</code> são as duas saídas clássicas.'
+},
+{
+  id:'perfil', aba:'Perfil', titulo:'Monte um cartão de perfil', url:'ana.dev',
+  html:[
+    '<body>',
+    '  <main class="cartao">',
+    {slot:'foto',ind:'    '},
+    {slot:'nome',ind:'    '},
+    {slot:'bio',ind:'    '},
+    '    <ul class="links">',
+    {slot:'l1',ind:'      '},
+    {slot:'l2',ind:'      '},
+    {slot:'l3',ind:'      '},
+    '    </ul>',
+    '  </main>',
+    '</body>'
+  ],
+  slots:{
+    foto:{label:'Foto',style:'width:120px;height:120px;margin:6px auto'},
+    nome:{label:'Nome'},
+    bio:{label:'Bio'},
+    l1:{label:'Link',grupo:'link',tag:'li'},
+    l2:{label:'Link',grupo:'link',tag:'li'},
+    l3:{label:'Link',grupo:'link',tag:'li'}
+  },
+  cssBase:`body {
+  margin: 0;
+  padding: 32px 16px;
+  background: #f3edfe;
+  font-family: Arial, sans-serif;
+}
+
+.cartao {
+  max-width: 320px;
+  margin: 0 auto;
+  padding: 28px 24px;
+  background: #ffffff;
+  border-radius: 16px;
+  text-align: center;
+}`,
+  css:{
+    foto:`.foto {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+}`,
+    nome:`.nome {
+  margin: 16px 0 4px;
+  font-size: 22px;
+  color: #1a1030;
+}`,
+    bio:`.bio {
+  margin: 0 0 20px;
+  font-size: 14px;
+  color: #4a4356;
+}`,
+    links:`.links {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.links a {
+  display: block;
+  margin-top: 10px;
+  padding: 12px;
+  border-radius: 10px;
+  background: #6a18e0;
+  color: #ffffff;
+  text-decoration: none;
+}`
+  },
+  pecas:[
+    {id:'foto',slot:'foto',tag:'<img>',label:'Foto de perfil',css:['foto'],
+     html:`<img class="foto" src="foto.jpg" alt="Foto da Ana">`,
+     render:`<img class="foto" src="${AVATAR}" alt="Foto da Ana">`},
+    {id:'nome',slot:'nome',tag:'<h2>',label:'Nome',css:['nome'],html:`<h2 class="nome">Ana Souza</h2>`},
+    {id:'bio',slot:'bio',tag:'<p>',label:'Bio',css:['bio'],html:`<p class="bio">Estudante de Computação. Aprendendo web um bloquinho por vez.</p>`},
+    {id:'port',grupo:'link',tag:'<li>',label:'Link “Portfólio”',css:['links'],html:`<li><a href="#">Meu portfólio</a></li>`},
+    {id:'git',grupo:'link',tag:'<li>',label:'Link “GitHub”',css:['links'],html:`<li><a href="#">GitHub</a></li>`},
+    {id:'contato',grupo:'link',tag:'<li>',label:'Link “Contato”',css:['links'],html:`<li><a href="#">Fale comigo</a></li>`}
+  ],
+  trancada:'Foto redonda com borda',
+  mao:{
+    hm:'Hm, arrastar foi fácil, e o código está todo aí. Mas a foto ficou quadrada, e não tem bloquinho de “redondo”. Isso é na mão.',
+    tarefa:'Deixe a <code>.foto</code> redonda e com uma borda de pelo menos 2px.',
+    inicial:'.foto {\n  \n}\n',
+    checks:[
+      {txt:'Foto redonda', fn:h=>{const f=h.q('.foto');if(!f)return false;const r=h.R(f),rad=h.cs(f).borderTopLeftRadius;const v=rad.includes('%')?parseFloat(rad)/100*r.width:parseFloat(rad);return v>=r.width/2-2}},
+      {txt:'Com borda de 2px ou mais', fn:h=>{const f=h.q('.foto');if(!f)return false;const c=h.cs(f);return parseFloat(c.borderTopWidth)>=2&&c.borderTopStyle!=='none'}}
+    ],
+    dicas:[
+      '<code>border-radius</code> arredonda os cantos. Com <code>50%</code>, um quadrado vira círculo.',
+      'A borda cabe numa linha só, com espessura, estilo e cor: <code>border: 4px solid #6a18e0;</code>'
+    ],
+    solucao:'.foto {\n  border-radius: 50%;\n  border: 4px solid #6a18e0;\n}\n'
+  },
+  aprendeu:'<code>border-radius: 50%</code> transforma quadrado em círculo. E repare que <code>.foto</code> aparece duas vezes no CSS: as regras se somam, e a de baixo ganha se as duas disserem a mesma coisa.'
+},
+{
+  id:'menu', aba:'Menu', titulo:'Monte o menu de uma padaria', url:'paoquente.com.br',
+  html:[
+    '<body>',
+    '  <header class="menu">',
+    {slot:'marca',ind:'    '},
+    '    <nav>',
+    '      <ul class="itens">',
+    {slot:'i1',ind:'        '},
+    {slot:'i2',ind:'        '},
+    {slot:'i3',ind:'        '},
+    '      </ul>',
+    '    </nav>',
+    '  </header>',
+    '',
+    {slot:'destaque',ind:'  '},
+    '</body>'
+  ],
+  slots:{
+    marca:{label:'Marca',style:'width:170px'},
+    i1:{label:'Item do menu',grupo:'item',tag:'li',style:'width:150px'},
+    i2:{label:'Item do menu',grupo:'item',tag:'li',style:'width:150px'},
+    i3:{label:'Item do menu',grupo:'item',tag:'li',style:'width:150px'},
+    destaque:{label:'Destaque da página',style:'margin:16px 24px;min-height:110px'}
+  },
+  cssBase:`body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+.menu {
+  padding: 16px 24px;
+  background: #fff7e8;
+  border-bottom: 2px solid #f0dcb8;
+}
+
+.itens {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}`,
+  css:{
+    marca:`.marca {
+  font-size: 20px;
+  font-weight: bold;
+  color: #7a3e00;
+  text-decoration: none;
+}`,
+    itens:`.itens a {
+  color: #5a3a14;
+  text-decoration: none;
+}`,
+    destaque:`.destaque {
+  padding: 48px 24px;
+}
+.destaque h1 {
+  margin: 0 0 8px;
+  font-size: 30px;
+  color: #2b1a05;
+}
+.destaque p {
+  margin: 0;
+  color: #6b5840;
+}`
+  },
+  pecas:[
+    {id:'marca',slot:'marca',tag:'<a>',label:'Marca da padaria',css:['marca'],html:`<a class="marca" href="#">🥖 Pão Quente</a>`},
+    {id:'cardapio',grupo:'item',tag:'<li>',label:'Item “Cardápio”',css:['itens'],html:`<li><a href="#">Cardápio</a></li>`},
+    {id:'pedidos',grupo:'item',tag:'<li>',label:'Item “Encomendas”',css:['itens'],html:`<li><a href="#">Encomendas</a></li>`},
+    {id:'contato',grupo:'item',tag:'<li>',label:'Item “Contato”',css:['itens'],html:`<li><a href="#">Contato</a></li>`},
+    {id:'destaque',slot:'destaque',tag:'<section>',label:'Destaque com título',css:['destaque'],
+     html:`<section class="destaque">
+  <h1>Pão saindo do forno às 6h</h1>
+  <p>Encomende pelo site e retire sem fila.</p>
+</section>`}
+  ],
+  trancada:'Menu lado a lado',
+  mao:{
+    hm:'Hm, arrastar foi fácil. Mas o menu ficou empilhado, um item embaixo do outro, e não existe bloquinho de “lado a lado”. Isso é na mão.',
+    tarefa:'Deixe marca e links na mesma linha: marca na ponta esquerda, links lado a lado na ponta direita, com espaço entre eles.',
+    inicial:'.menu {\n  \n}\n\n.itens {\n  \n}\n',
+    checks:[
+      {txt:'Links lado a lado, com espaço entre eles', fn:h=>{const l=h.qa('.itens li');if(l.length<3)return false;const r=l.map(h.R);return h.perto(r[0].top,r[1].top,4)&&h.perto(r[1].top,r[2].top,4)&&r[1].left-r[0].right>=8&&r[2].left-r[1].right>=8}},
+      {txt:'Marca e links na mesma linha', fn:h=>{const m=h.q('.marca'),l=h.q('.itens li');if(!m||!l)return false;const a=h.R(m),b=h.R(l);return h.perto(a.top+a.height/2,b.top+b.height/2,14)}},
+      {txt:'Marca à esquerda, links à direita', fn:h=>{const m=h.q('.marca'),l=h.qa('.itens li'),me=h.q('.menu');if(!m||l.length<3||!me)return false;const a=h.R(m),mr=h.R(me);return a.left<mr.left+48&&h.R(l[2]).right>mr.right-48&&h.R(l[0]).left-a.right>40}}
+    ],
+    dicas:[
+      'Aqui são dois pais: <code>.menu</code> organiza a marca e o nav; <code>.itens</code> organiza os links.',
+      '<code>display: flex;</code> coloca os filhos lado a lado. <code>justify-content: space-between;</code> empurra um para cada ponta.',
+      'Para dar espaço entre os links, use <code>gap: 24px;</code> em <code>.itens</code>. E <code>align-items: center;</code> alinha tudo pela altura.'
+    ],
+    solucao:'.menu {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n}\n\n.itens {\n  display: flex;\n  gap: 24px;\n}\n'
+  },
+  aprendeu:'<code>display: flex</code> no pai coloca os filhos lado a lado. <code>justify-content</code> distribui ao longo da linha, <code>align-items</code> alinha na altura e <code>gap</code> dá o respiro.'
+},
+{
+  id:'grade', aba:'Grade', titulo:'Monte a vitrine de uma sorveteria', url:'gelato.com.br',
+  html:[
+    '<body>',
+    '  <h1 class="titulo">Sabores da semana</h1>',
+    '  <section class="grade">',
+    {slot:'c1',ind:'    '},
+    {slot:'c2',ind:'    '},
+    {slot:'c3',ind:'    '},
+    {slot:'c4',ind:'    '},
+    {slot:'c5',ind:'    '},
+    {slot:'c6',ind:'    '},
+    '  </section>',
+    '</body>'
+  ],
+  slots:{c1:{label:'Card',grupo:'card'},c2:{label:'Card',grupo:'card'},c3:{label:'Card',grupo:'card'},c4:{label:'Card',grupo:'card'},c5:{label:'Card',grupo:'card'},c6:{label:'Card',grupo:'card'}},
+  cssBase:`body {
+  margin: 0;
+  padding: 24px;
+  background: #fffaf3;
+  font-family: Arial, sans-serif;
+}
+
+.titulo {
+  margin: 0 0 16px;
+  color: #3b2a20;
+}`,
+  css:{
+    card:`.card {
+  padding: 16px;
+  background: #ffffff;
+  border: 1px solid #efe3d3;
+  border-radius: 12px;
+  text-align: center;
+}
+.card .emoji {
+  font-size: 36px;
+}
+.card h3 {
+  margin: 8px 0 4px;
+}
+.card p {
+  margin: 0;
+  color: #8a6d55;
+}`
+  },
+  pecas:[
+    ['morango','🍓','Morango','12'],['chocolate','🍫','Chocolate','12'],['limao','🍋','Limão','10'],
+    ['coco','🥥','Coco','11'],['uva','🍇','Uva','11'],['menta','🌿','Menta','13']
+  ].map(([id,e,n,p])=>({id,grupo:'card',tag:'<article>',label:`Card “${n}”`,css:['card'],
+    html:`<article class="card">
+  <span class="emoji">${e}</span>
+  <h3>${n}</h3>
+  <p>R$ ${p}</p>
+</article>`})),
+  trancada:'Grade de 3 colunas',
+  mao:{
+    hm:'Hm, arrastar foi fácil. Mas os cards ficaram um embaixo do outro, todos colados, e não existe bloquinho de grade. Isso é na mão.',
+    tarefa:'Transforme a <code>.grade</code> em 3 colunas, com espaço entre os cards.',
+    inicial:'.grade {\n  \n}\n',
+    checks:[
+      {txt:'Três cards na primeira linha', fn:h=>{const c=h.qa('.card');if(c.length<6)return false;const r=c.map(h.R);return h.perto(r[0].top,r[1].top,4)&&h.perto(r[1].top,r[2].top,4)&&r[1].left>=r[0].right-1&&r[2].left>=r[1].right-1}},
+      {txt:'O quarto card começa uma linha nova', fn:h=>{const c=h.qa('.card');if(c.length<6)return false;const r=c.map(h.R);return r[3].top>=r[0].bottom-1&&h.perto(r[3].left,r[0].left,4)}},
+      {txt:'Espaço entre os cards', fn:h=>{const c=h.qa('.card');if(c.length<6)return false;const r=c.map(h.R);return r[1].left-r[0].right>=8&&r[3].top-r[0].bottom>=8}}
+    ],
+    dicas:[
+      '<code>display: grid;</code> liga o modo grade na <code>.grade</code>.',
+      '<code>grid-template-columns</code> diz quantas colunas e de que largura. <code>1fr</code> é “uma fatia do espaço”. Três fatias iguais: <code>1fr 1fr 1fr</code>.',
+      'O espaço entre as células é o <code>gap</code>, igualzinho ao do flex.'
+    ],
+    solucao:'.grade {\n  display: grid;\n  grid-template-columns: repeat(3, 1fr);\n  gap: 16px;\n}\n'
+  },
+  aprendeu:'<code>display: grid</code> desenha linhas e colunas. <code>grid-template-columns: repeat(3, 1fr)</code> cria três colunas iguais e os cards vão preenchendo sozinhos.'
+},
+{
+  id:'fixo', aba:'Botão fixo', titulo:'Monte a página de um produto', url:'loja.com.br/tenis',
+  guia:'canto',
+  html:[
+    '<body>',
+    {slot:'produto',ind:'  '},
+    {slot:'detalhes',ind:'  '},
+    {slot:'botao',ind:'  '},
+    '</body>'
+  ],
+  slots:{
+    produto:{label:'Produto',style:'min-height:120px'},
+    detalhes:{label:'Detalhes',style:'min-height:90px'},
+    botao:{label:'Botão de contato',style:'width:170px'}
+  },
+  cssBase:`body {
+  margin: 0;
+  padding: 24px;
+  font-family: Arial, sans-serif;
+  color: #222222;
+}`,
+  css:{
+    produto:`.vitrine {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  font-size: 96px;
+  background: #eef4ff;
+  border-radius: 16px;
+}
+.produto h1 {
+  margin: 16px 0 4px;
+}
+.preco {
+  margin: 0;
+  font-size: 22px;
+  font-weight: bold;
+  color: #1a7f4b;
+}`,
+    detalhes:`.detalhes {
+  margin-top: 24px;
+  line-height: 1.7;
+}
+.detalhes p {
+  margin: 0 0 14px;
+}`,
+    botao:`.flutuante {
+  display: inline-block;
+  padding: 14px 20px;
+  border-radius: 999px;
+  background: #25a55a;
+  color: #ffffff;
+  font-weight: bold;
+  text-decoration: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}`
+  },
+  pecas:[
+    {id:'produto',slot:'produto',tag:'<section>',label:'Foto, nome e preço',css:['produto'],
+     html:`<section class="produto">
+  <div class="vitrine">👟</div>
+  <h1>Tênis Leve 2</h1>
+  <p class="preco">R$ 299,90</p>
+</section>`},
+    {id:'detalhes',slot:'detalhes',tag:'<section>',label:'Texto de detalhes',css:['detalhes'],
+     html:`<section class="detalhes">
+  <h2>Detalhes</h2>
+  <p>Cabedal em tecido respirável que seca rápido.</p>
+  <p>Solado com amortecimento para treinos de até 20 km.</p>
+  <p>Palmilha removível, pode lavar à mão.</p>
+  <p>Cadarço elástico: calça sem precisar amarrar.</p>
+  <p>Pesa 210 g no tamanho 40.</p>
+  <p>Troca grátis em até 30 dias.</p>
+</section>`},
+    {id:'botao',slot:'botao',tag:'<a>',label:'Botão “Fale conosco”',css:['botao'],html:`<a class="flutuante" href="#">💬 Fale conosco</a>`}
+  ],
+  trancada:'Grudar no canto',
+  mao:{
+    hm:'Hm, arrastar foi fácil. Mas o botão ficou lá no fim da página: quem está lendo o topo nem vê. Não existe bloquinho de “grudar na tela”. Isso é na mão.',
+    tarefa:'Faça o botão <code>.flutuante</code> ficar preso no canto inferior direito da janela, mesmo quando a página rola.',
+    inicial:'.flutuante {\n  \n}\n',
+    checks:[
+      {txt:'Preso na janela (não rola junto)', fn:h=>{const b=h.q('.flutuante');return b&&h.cs(b).position==='fixed'}},
+      {txt:'No canto inferior direito', fn:h=>{const b=h.q('.flutuante');if(!b)return false;const r=h.R(b);return r.right<=h.W+1&&r.right>=h.W-80&&r.bottom<=h.H+1&&r.bottom>=h.H-80}}
+    ],
+    dicas:[
+      '<code>position: fixed;</code> prende o elemento na janela do navegador, e não na página.',
+      'Com ele preso, <code>right</code> e <code>bottom</code> dizem a distância até as bordas. Por exemplo: <code>right: 20px;</code>'
+    ],
+    solucao:'.flutuante {\n  position: fixed;\n  right: 20px;\n  bottom: 20px;\n}\n'
+  },
+  aprendeu:'<code>position: fixed</code> tira o elemento do fluxo da página e prende na janela. <code>top</code>, <code>right</code>, <code>bottom</code> e <code>left</code> dizem onde.'
+}
+];
+
+/* ---------- estado ---------- */
+const LS='arrasta-coda-v1';
+let E=null;
+try{E=JSON.parse(localStorage.getItem(LS))}catch(e){}
+if(!E||!E.fases||typeof E.fase!=='number'||!FASES[E.fase]) E={fase:0,fases:{}};
+const salvar=()=>{try{localStorage.setItem(LS,JSON.stringify(E))}catch(e){}};
+const F=()=>FASES[E.fase];
+function S(){const f=F();if(!E.fases[f.id])E.fases[f.id]={placed:{},stage:'arrastar',mao:f.mao.inicial,dicas:0,feito:false};return E.fases[f.id]}
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const reduz=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const peca=(f,id)=>f.pecas.find(p=>p.id===id);
+const slotIds=f=>f.html.filter(t=>typeof t!=='string').map(t=>t.slot);
+const usadas=s=>new Set(Object.values(s.placed));
+const aceita=(f,sid,p)=>p.slot?p.slot===sid:(p.grupo&&p.grupo===f.slots[sid].grupo);
+const completa=(f,s)=>slotIds(f).every(id=>s.placed[id]);
+let ultimo=[];
+
+/* ---------- geração de código ---------- */
+function linhasHTML(f,s,novo){
+  const out=[];
+  for(const t of f.html){
+    if(typeof t==='string'){out.push({txt:t});continue}
+    const pid=s.placed[t.slot];
+    if(pid) peca(f,pid).html.split('\n').forEach(l=>out.push({txt:t.ind+l,nova:pid===novo}));
+    else out.push({txt:t.ind+`<!-- espaço vazio: ${f.slots[t.slot].label} -->`,vazia:true});
+  }
+  return out;
+}
+function htmlRender(f,s){
+  return f.html.map(t=>{
+    if(typeof t==='string') return /^\s*<\/?body>\s*$/.test(t)?'':t;
+    const pid=s.placed[t.slot];
+    if(pid){const p=peca(f,pid);return p.render||p.html}
+    const sl=f.slots[t.slot],tag=sl.tag||'div';
+    return `<${tag} class="__slot${sl.inline?' __in':''}" data-slot="${t.slot}" style="${sl.style||''}">${esc(sl.label)}</${tag}>`;
+  }).join('\n');
+}
+function blocos(f,s){const set=new Set();Object.values(s.placed).forEach(pid=>(peca(f,pid).css||[]).forEach(c=>set.add(c)));return Object.keys(f.css).filter(k=>set.has(k))}
+function linhasCSS(f,s,novos){
+  const out=f.cssBase.split('\n').map(txt=>({txt}));
+  for(const k of blocos(f,s)){out.push({txt:''});f.css[k].split('\n').forEach(txt=>out.push({txt,nova:novos.has(k)}))}
+  return out;
+}
+const cssTexto=(f,s)=>linhasCSS(f,s,new Set()).map(l=>l.txt).join('\n');
+
+/* ---------- realce de sintaxe ---------- */
+function hlHTML(l){
+  const m=l.match(/^(\s*)(<!--.*-->)\s*$/);
+  if(m) return m[1]+`<span class="k-com">${esc(m[2])}</span>`;
+  return l.replace(/(<\/?)([a-zA-Z0-9]+)((?:\s+[a-zA-Z-]+(?:="[^"]*")?)*)\s*(\/?>)|([^<]+)|(<)/g,(all,o,tag,attrs,c,txt,lt)=>{
+    if(txt!==undefined) return esc(txt);
+    if(lt) return esc(lt);
+    const a=(attrs||'').replace(/(\s+)([a-zA-Z-]+)(?:(=)("[^"]*"))?/g,(x,sp,n,eq,v)=>sp+`<span class="k-atr">${n}</span>`+(eq?`=<span class="k-str">${esc(v)}</span>`:''));
+    return `<span class="k-tag">${esc(o)}${tag}</span>${a}<span class="k-tag">${esc(c)}</span>`;
+  });
+}
+function hlCSS(l){
+  let m;
+  if(/^\s*\/\*.*\*\/\s*$/.test(l)) return `<span class="k-com">${esc(l)}</span>`;
+  if((m=l.match(/^(\s*)([^{}]+?)(\s*\{\s*)([a-z-]+)(\s*:\s*)([^;]+)(;\s*\}\s*)$/)))
+    return m[1]+`<span class="k-sel">${esc(m[2])}</span>${esc(m[3])}<span class="k-prop">${m[4]}</span>${esc(m[5])}<span class="k-val">${esc(m[6])}</span>${esc(m[7])}`;
+  if((m=l.match(/^(\s*)([^{}:]+?)(\s*\{)\s*$/))) return m[1]+`<span class="k-sel">${esc(m[2])}</span>${esc(m[3])}`;
+  if((m=l.match(/^(\s*)([a-z-]+)(\s*:\s*)(.*?)(;?)\s*$/))) return m[1]+`<span class="k-prop">${m[2]}</span>${esc(m[3])}<span class="k-val">${esc(m[4])}</span>${esc(m[5])}`;
+  return esc(l);
+}
+function pintar(el,linhas,hl){
+  el.innerHTML=linhas.map((l,i)=>`<div class="linha${l.nova?' nova':''}${l.vazia?' vazia':''}"><span class="n">${i+1}</span><span class="c">${hl(l.txt)||' '}</span></div>`).join('');
+}
+
+/* ---------- tela (iframe) ---------- */
+const tela=$('#tela');let doc=null;
+const SLOT_CSS=`.__slot{box-sizing:border-box;display:flex;align-items:center;justify-content:center;min-height:44px;margin:6px 0;padding:8px 12px;border:2px dashed #b48cf2;border-radius:10px;background:rgba(106,24,224,.05);color:#6a18e0;font:500 13px/1.2 system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:0;text-align:center;transition:background .12s,border-color .12s,transform .12s;list-style:none}
+.__slot.__in{display:inline-flex;margin:6px 4px;vertical-align:middle}
+.__slot.__realce{background:rgba(106,24,224,.1)}
+.__slot.__ok{background:rgba(0,209,143,.16);border-color:#00d18f;color:#006b49;transform:scale(1.02)}
+.__slot.__no{background:rgba(224,40,74,.1);border-color:#e0284a;color:#a0122a}`;
+tela.addEventListener('load',()=>{
+  doc=tela.contentDocument;
+  doc.addEventListener('click',e=>{if(e.target.closest('a,button'))e.preventDefault()});
+  montarFase();
+});
+tela.srcdoc=`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><style id="sis">${SLOT_CSS}</style><style id="usr"></style></head><body></body></html>`;
+
+function aplicarCSS(){
+  if(!doc)return;
+  const f=F(),s=S();
+  doc.getElementById('usr').textContent=cssTexto(f,s)+(s.stage!=='arrastar'?'\n\n'+s.mao:'');
+  guiaOverlay();
+  if(s.stage!=='arrastar') checar();
+}
+function helpers(){
+  const d=doc,w=d.defaultView;
+  return{q:x=>d.querySelector(x),qa:x=>[...d.querySelectorAll(x)],R:el=>el.getBoundingClientRect(),cs:el=>w.getComputedStyle(el),
+    W:d.documentElement.clientWidth,H:d.documentElement.clientHeight,perto:(a,b,t=12)=>Math.abs(a-b)<=t,
+    uniao(els){els=[...els];if(!els.length)return null;const rs=els.map(e=>e.getBoundingClientRect());const l=Math.min(...rs.map(r=>r.left)),r=Math.max(...rs.map(r=>r.right)),t=Math.min(...rs.map(r=>r.top)),b=Math.max(...rs.map(r=>r.bottom));return{left:l,right:r,top:t,bottom:b,cx:(l+r)/2,cy:(t+b)/2}}};
+}
+function checar(){
+  const f=F(),s=S(),h=helpers();
+  ultimo=f.mao.checks.map(c=>{try{return!!c.fn(h)}catch(e){return false}});
+  document.querySelectorAll('#painelMao .checks li').forEach((li,i)=>li.classList.toggle('ok',!!ultimo[i]));
+  if(ultimo.length&&ultimo.every(Boolean)&&!s.feito){
+    s.feito=true;s.stage='feito';salvar();
+    const m=$('#moldura');m.classList.add('vitoria');setTimeout(()=>m.classList.remove('vitoria'),1800);
+    aviso('Funcionou! Isso foi código escrito por você.',true);
+    guiaUI();maoUI();fasesUI();guiaOverlay();
+  }
+}
+function guiaOverlay(){
+  const f=F(),s=S(),c=$('#guiaCentro'),k=$('#guiaCanto');
+  const ativo=s.stage==='mao';
+  c.hidden=!(f.guia==='centro'&&ativo);k.hidden=!(f.guia==='canto'&&ativo);
+  if(!doc)return;
+  const cw=doc.documentElement.clientWidth;
+  c.style.left=(cw/2)+'px';
+  k.style.right=(tela.clientWidth-cw+12)+'px';
+}
+addEventListener('resize',()=>{guiaOverlay();if(S().stage!=='arrastar')checar()});
+
+/* ---------- interface ---------- */
+function fasesUI(){
+  const nav=$('#fases');nav.innerHTML='';
+  FASES.forEach((f,i)=>{
+    const b=document.createElement('button');b.type='button';b.className='fase-btn'+(E.fases[f.id]?.feito?' feita':'');
+    b.setAttribute('aria-current',i===E.fase);b.innerHTML=`<span class="num">${i+1}</span>${f.aba}`;
+    b.onclick=()=>{E.fase=i;salvar();montarFase()};nav.append(b);
+  });
+}
+function guiaUI(){
+  const f=F(),s=S();
+  $('#titulo').textContent=f.titulo;
+  const e1=$('#etapa1'),e2=$('#etapa2');
+  e1.className='etapa '+(s.stage==='arrastar'?'ativa':'ok');
+  e2.className='etapa '+(s.stage==='mao'?'ativa':s.stage==='feito'?'ok':'');
+  const msg={arrastar:'Arraste cada peça da direita até o espaço tracejado dela na página. A cada peça, olhe o código nascendo à esquerda.',
+    mao:f.mao.hm,
+    feito:'Pronto. A parte fácil veio dos bloquinhos; a parte que faz a página funcionar de verdade, você escreveu.'}[s.stage];
+  $('#mensagem').textContent=msg;
+}
+function pecasUI(){
+  const f=F(),s=S(),us=usadas(s),lista=$('#listaPecas');
+  lista.innerHTML='';
+  const arrastando=s.stage==='arrastar';
+  $('#blocoPecas').hidden=!arrastando;$('#painelMao').hidden=arrastando;
+  $('#contaPecas').textContent=`${us.size} de ${slotIds(f).length} no lugar`;
+  for(const p of f.pecas){
+    const b=document.createElement('button');b.type='button';b.className='peca';b.dataset.id=p.id;
+    b.innerHTML=`<code class="tag">${esc(p.tag)}</code><span class="rot">${esc(p.label)}</span>`;
+    if(us.has(p.id)){b.classList.add('usada');b.disabled=true}
+    else{
+      b.setAttribute('aria-label',`${p.label}. Pressione Enter para colocar no lugar.`);
+      b.addEventListener('pointerdown',e=>inicio(e,p,b));
+      b.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();colocarTeclado(p,b)}});
+    }
+    lista.append(b);
+  }
+  const t=document.createElement('div');t.className='peca trancada';t.id='trancada';t.tabIndex=0;
+  t.innerHTML=`<code class="tag">✋</code><span class="rot">${esc(f.trancada)}</span><small>Não existe bloquinho para isso.</small>`;
+  const tenta=e=>{e.preventDefault();t.classList.remove('treme');void t.offsetWidth;t.classList.add('treme');
+    aviso(completa(f,s)?'Isso é na mão: escreva no editor à esquerda.':'Isso não tem bloquinho. Monte o resto arrastando; depois a gente escreve isso na mão.')};
+  t.addEventListener('pointerdown',tenta);t.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')tenta(e)});
+  lista.append(t);
+}
+function maoUI(){
+  const f=F(),s=S(),p=$('#painelMao');
+  if(s.stage==='arrastar'){p.innerHTML='';return}
+  const prox=FASES[E.fase+1];
+  const todas=FASES.every(x=>E.fases[x.id]?.feito);
+  const nDica=s.dicas<f.mao.dicas.length;
+  p.innerHTML=`<h2>✋ Na mão</h2>
+<p class="tarefa">${f.mao.tarefa}</p>
+<ul class="checks">${f.mao.checks.map((c,i)=>`<li class="${ultimo[i]?'ok':''}">${c.txt}</li>`).join('')}</ul>
+${s.feito?`<div class="feito"><h3>Fase concluída</h3><p>${f.aprendeu}</p>${placar(f,s)}
+${prox?`<button class="acao" id="btnProx" type="button">Ir para a fase ${E.fase+2}: ${prox.aba}</button>`:todas?'<p class="placar">Você terminou todas as fases.</p>':''}</div>`:`<p class="onde">Escreva no editor roxo, à esquerda. A página muda enquanto você digita.</p>`}
+<div>${f.mao.dicas.slice(0,s.dicas).map(d=>`<p class="dica">${d}</p>`).join('')}</div>
+<button class="sec" id="btnDica" type="button">${nDica?`Mostrar dica (${s.dicas+1} de ${f.mao.dicas.length})`:'Colar uma solução'}</button>`;
+  $('#btnDica').onclick=()=>{
+    if(s.dicas<f.mao.dicas.length){s.dicas++;salvar();maoUI()}
+    else{editor.value=f.mao.solucao;s.mao=f.mao.solucao;salvar();ajustarEditor();aplicarCSS();aviso('Solução colada. Leia linha por linha e tente mudar um valor.')}
+  };
+  const bp=$('#btnProx');if(bp)bp.onclick=()=>{E.fase++;salvar();montarFase()};
+}
+function placar(f,s){
+  const auto=linhasHTML(f,s).length+cssTexto(f,s).split('\n').length;
+  const mao=s.mao.split('\n').filter(l=>/:/.test(l)).length;
+  return `<p class="placar">Os bloquinhos escreveram ${auto} linhas. Você escreveu ${mao} ${mao===1?'propriedade':'propriedades'} na mão, e foram elas que resolveram.</p>`;
+}
+
+const editor=$('#editor');let tEd;
+function ajustarEditor(){editor.rows=Math.max(6,editor.value.split('\n').length+1)}
+editor.addEventListener('input',()=>{S().mao=editor.value;salvar();ajustarEditor();clearTimeout(tEd);tEd=setTimeout(aplicarCSS,120)});
+editor.addEventListener('keydown',e=>{
+  if(e.key==='Tab'&&!e.shiftKey){e.preventDefault();const a=editor.selectionStart,b=editor.selectionEnd;editor.setRangeText('  ',a,b,'end');editor.dispatchEvent(new Event('input'))}
+});
+
+function mostrarDelta(el,n){if(!n)return;el.textContent=`+${n} ${n===1?'linha':'linhas'}`;el.classList.add('mostra');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('mostra'),2600)}
+function rolarParaNova(){
+  for(const id of ['#rolaHtml','#rolaCss']){const r=$(id),n=r.querySelector('.linha.nova');if(n)r.scrollTop=Math.max(0,n.offsetTop-r.clientHeight*.3)}
+}
+function renderTudo(o={}){
+  const f=F(),s=S();
+  const lh=linhasHTML(f,s,o.novoPid),lc=linhasCSS(f,s,o.novos||new Set());
+  pintar($('#htmlLinhas'),lh,hlHTML);pintar($('#cssLinhas'),lc,hlCSS);
+  if(o.novoPid){mostrarDelta($('#deltaHtml'),lh.filter(l=>l.nova).length);mostrarDelta($('#deltaCss'),lc.filter(l=>l.nova).length)}
+  $('#maoBox').hidden=s.stage==='arrastar';
+  if(doc){const w=doc.defaultView,y=w.scrollY;doc.body.innerHTML=htmlRender(f,s);w.scrollTo(0,y)}
+  pecasUI();guiaUI();maoUI();aplicarCSS();
+  if(o.novoPid)rolarParaNova();
+}
+function montarFase(){
+  const f=F(),s=S();ultimo=[];
+  $('#url').textContent=f.url;
+  editor.value=s.mao;ajustarEditor();
+  if(doc)doc.defaultView.scrollTo(0,0);
+  $('#rolaHtml').scrollTop=0;$('#rolaCss').scrollTop=0;
+  fasesUI();renderTudo();
+}
+$('#recomecar').onclick=()=>{delete E.fases[F().id];salvar();montarFase();aviso('Fase recomeçada.')};
+
+/* ---------- colocar peças ---------- */
+function colocar(pid,sid,deOnde){
+  const f=F(),s=S();
+  const antes=new Set(blocos(f,s));
+  s.placed[sid]=pid;
+  const novos=new Set(blocos(f,s).filter(k=>!antes.has(k)));
+  salvar();
+  renderTudo({novoPid:pid,novos});
+  chipParaCodigo(peca(f,pid).tag,deOnde);
+  if(completa(f,s)&&s.stage==='arrastar'){
+    setTimeout(()=>{
+      const t=$('#trancada');if(t)t.classList.add('chama');
+      guiaUIParcial();
+      setTimeout(entrarMao,reduz?300:1600);
+    },reduz?100:800);
+  }
+}
+function guiaUIParcial(){$('#mensagem').textContent=F().mao.hm}
+function entrarMao(){
+  const s=S();if(s.stage!=='arrastar')return;
+  s.stage='mao';salvar();renderTudo();
+  const b=$('#maoBox');b.classList.add('chama');setTimeout(()=>b.classList.remove('chama'),1500);
+  const r=$('#rolaCss');r.scrollTop=b.offsetTop-40;
+  editor.focus();const pos=editor.value.indexOf('\n  ')+3;if(pos>2)editor.setSelectionRange(pos,pos);
+}
+function rectSlot(sid){
+  const el=doc.querySelector(`[data-slot="${sid}"]`);if(!el)return null;
+  const r=el.getBoundingClientRect(),t=tela.getBoundingClientRect();
+  return{left:t.left+r.left,top:t.top+r.top,width:r.width,height:r.height};
+}
+function slotEm(x,y){
+  const r=tela.getBoundingClientRect();
+  if(x<r.left||x>r.right||y<r.top||y>r.bottom)return null;
+  const el=doc.elementFromPoint(x-r.left,y-r.top);const s=el&&el.closest('.__slot');
+  return s?s.dataset.slot:null;
+}
+function limparSlots(){doc&&doc.querySelectorAll('.__slot').forEach(s=>s.classList.remove('__ok','__no','__realce'))}
+function voar(g,alvo,cb){
+  const gr=g.getBoundingClientRect();
+  const x=alvo.left+(alvo.width-gr.width)/2,y=alvo.top+(alvo.height-gr.height)/2;
+  if(reduz){g.remove();cb();return}
+  g.style.transition='transform .34s cubic-bezier(.2,.8,.2,1), opacity .34s';
+  requestAnimationFrame(()=>{g.style.transform=`translate(${x}px,${y}px) rotate(0deg) scale(.96)`});
+  setTimeout(()=>{g.remove();cb()},350);
+}
+function fazerFantasma(el,r){
+  const g=el.cloneNode(true);g.classList.add('fantasma');g.removeAttribute('id');
+  g.style.width=r.width+'px';g.style.transform=`translate(${r.left}px,${r.top}px)`;document.body.append(g);return g;
+}
+function colocarTeclado(p,el){
+  const f=F(),s=S();
+  const sid=slotIds(f).find(id=>!s.placed[id]&&aceita(f,id,p));if(!sid)return;
+  const alvo=rectSlot(sid);if(!alvo){colocar(p.id,sid,null);return}
+  const g=fazerFantasma(el,el.getBoundingClientRect());el.classList.add('saiu');
+  voar(g,alvo,()=>colocar(p.id,sid,alvo));
+}
+let arr=null;
+function inicio(e,p,el){
+  if(e.button!==0||arr)return;e.preventDefault();
+  const r=el.getBoundingClientRect();
+  arr={p,el,r,sx:e.clientX,sy:e.clientY,ox:e.clientX-r.left,oy:e.clientY-r.top,g:null,alvo:null};
+  addEventListener('pointermove',mover);addEventListener('pointerup',soltar);addEventListener('pointercancel',soltar);
+}
+function mover(e){
+  if(!arr)return;
+  if(!arr.g){
+    if(Math.hypot(e.clientX-arr.sx,e.clientY-arr.sy)<4)return;
+    arr.g=fazerFantasma(arr.el,arr.r);tela.style.pointerEvents='none';document.body.classList.add('arrastando');arr.el.classList.add('saiu');
+    doc.querySelectorAll('.__slot').forEach(s=>s.classList.add('__realce'));
+  }
+  arr.g.style.transform=`translate(${e.clientX-arr.ox}px,${e.clientY-arr.oy}px) rotate(-2.5deg)`;
+  const sid=slotEm(e.clientX,e.clientY);
+  if(sid!==arr.alvo){
+    doc.querySelectorAll('.__slot').forEach(s=>s.classList.remove('__ok','__no'));
+    if(sid){doc.querySelector(`[data-slot="${sid}"]`).classList.add(aceita(F(),sid,arr.p)?'__ok':'__no')}
+    arr.alvo=sid;
+  }
+  const t=tela.getBoundingClientRect();
+  if(e.clientX>t.left&&e.clientX<t.right){
+    if(e.clientY>t.bottom-50&&e.clientY<t.bottom+30)doc.defaultView.scrollBy(0,12);
+    else if(e.clientY<t.top+50&&e.clientY>t.top-30)doc.defaultView.scrollBy(0,-12);
+  }
+}
+function soltar(e){
+  removeEventListener('pointermove',mover);removeEventListener('pointerup',soltar);removeEventListener('pointercancel',soltar);
+  const a=arr;arr=null;if(!a)return;
+  tela.style.pointerEvents='';document.body.classList.remove('arrastando');
+  if(!a.g)return;
+  const f=F(),sid=e.type==='pointerup'?slotEm(e.clientX,e.clientY):null;
+  if(sid&&aceita(f,sid,a.p)){
+    const alvo=rectSlot(sid);limparSlots();
+    voar(a.g,alvo,()=>colocar(a.p.id,sid,alvo));
+    return;
+  }
+  limparSlots();
+  if(sid) aviso(`Esse espaço é para: ${f.slots[sid].label}. A peça ${a.p.tag} vai em outro lugar.`);
+  else{const t=tela.getBoundingClientRect();if(e.clientX>t.left&&e.clientX<t.right&&e.clientY>t.top&&e.clientY<t.bottom)aviso('Solte a peça em cima de um espaço tracejado.')}
+  voar(a.g,a.r,()=>a.el.classList.remove('saiu'));
+}
+function chipParaCodigo(tag,de){
+  if(reduz||!de)return;
+  const alvo=document.querySelector('#htmlLinhas .linha.nova .c');if(!alvo)return;
+  const tr=alvo.getBoundingClientRect();
+  const c=document.createElement('div');c.className='chip';c.textContent=tag;document.body.append(c);
+  const x0=de.left+de.width/2,y0=de.top+de.height/2,x1=tr.left+4,y1=tr.top+tr.height/2;
+  const mx=(x0+x1)/2,my=Math.min(y0,y1)-60;
+  const a=c.animate([
+    {transform:`translate(${x0}px,${y0}px) translate(-50%,-50%) scale(.6)`,opacity:0},
+    {transform:`translate(${x0}px,${y0}px) translate(-50%,-50%) scale(1.05)`,opacity:1,offset:.12},
+    {transform:`translate(${mx}px,${my}px) translate(-25%,-50%) scale(1)`,opacity:1,offset:.5},
+    {transform:`translate(${x1}px,${y1}px) translate(0%,-50%) scale(.95)`,opacity:1,offset:.88},
+    {transform:`translate(${x1}px,${y1}px) translate(0%,-50%) scale(.95)`,opacity:0}
+  ],{duration:900,easing:'cubic-bezier(.45,0,.25,1)'});
+  a.onfinish=()=>c.remove();
+}
+
+/* ---------- aviso ---------- */
+let tAv;
+function aviso(t,bom){const a=$('#aviso');a.textContent=t;a.className='aviso mostra'+(bom?' bom':'');clearTimeout(tAv);tAv=setTimeout(()=>a.className='aviso'+(bom?' bom':''),3400)}
+
+fasesUI();
+</script>
+</body>
+</html>
